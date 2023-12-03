@@ -1,0 +1,72 @@
+% !TeX root = ../tfg.tex
+% !TeX encoding = utf8
+%
+%*******************************************************
+% Introducción
+%*******************************************************
+
+% \manualmark
+% \markboth{\textsc{Introducción}}{\textsc{Introducción}} 
+
+\chapter{Introduction}
+
+Machine learning was born at the intersection of statistics, mathematics and computer science. It is considered as the ``art'' of making computers learn from data. On the other hand, quantum computing is the study of information processing tasks that can be accomplished using a quantum mechanical system. Automatically learning from data and the quantum realm are two fields that generate excitement and are widely researched and also discussed by the general population. Therefore, it is natural to explore the idea of joining both branches: quantum machine learning, a term that has been around for barely 10 years but that has established itself as an active sub-discipline of quantum computing research. 
+\vspace{5pt}
+
+This thesis embarks on a journey through the convergence of machine learning and quantum computing, aiming to unravel the intricacies, explore their synergies and understand the implications they hold. Machine learning is viewed as a toolbox of techniques to learn from data and make reliable predictions. It is a field driven by an empirical approach. Our motivation is to shift the focus from practical to theoretical, focusing on its mathematical fundamentals to understand the working principles that drives this field to success. Quantum computing is built upon the framework of quantum mechanics. Departing with some basics of algebra and functional analysis, we will study the theory of quantum computing to then take a step forward to pass from theory to practice and merge both fields into quantum machine learning. We aim to establish a solid mathematical framework that supports Quantum Support Vector Machines and Quantum Neural Networks, to then apply this techniques to approach the quantum separability problem through a machine learning lens. This problem addresses detection and classification of quantum entanglement, a fundamental feature of quantum mechanics.
+\vspace{5pt}
+
+There are two main goals for this work:
+\begin{enumerate}
+	\item To acquire a solid understanding of supervised machine learning and quantum computing to be able to dive into the field of quantum machine learning from both a mathematical and practical perspective.
+	\item To approach a machine learning problem with quantum machine learning methods, its implementation and experimentation.
+\end{enumerate}
+
+In order to accomplish these goals, this thesis is organized to achieve a series of objectives throughout each chapter:
+
+\begin{itemize}
+    \item \textbf{Chapter \ref{ch:1-MathematicalFundamentalsML}: Mathematical fundamentals of Machine Learning}. Machine learning models are usually conceived as a ``black box''  that is fed with data and learns to generate reliable outputs. This is one of its most significant criticisms, having led to huge efforts towards Explainable AI (XAI) \cite{ali2023explainable}. This motivates the next objectives:
+    
+    \begin{enumerate}
+        \item To understand what happens in the ``black box'' of supervised machine learning techniques.
+        \item To develop the mathematical theory that supervised machine learning is built upon following the three component schema: the data, the model and the learning procedure.
+        \item To focus on the supervised machine learning methods of support vector machines and neural networks.
+    \end{enumerate}
+    The main sources of bibliography for this chapter has been \cite{mustafa-learningdata, jung2022machine, nielsen2015neural, schuld2021machine}
+
+    \item \textbf{Chapter \ref{ch:2-IntroQC}: Introduction to Quantum Computing}. It encompasses our first approach to quantum computing and quantum mechanics, in which we focus on:
+
+    \begin{enumerate}[resume]
+        \item To research on the arise of quantum computing.
+        \item To define and understand the theory behind quantum computing from a mathematical perspective, formulating the postulates of quantum mechanics.  
+    \end{enumerate}
+    We remark the main books \cite{nielsen_chuang_2010, Scherer_book} accessed for the writing of this chapter.
+
+    \item \textbf{Chapter \ref{ch:3-QML}: Quantum Machine Learning}. We will introduce quantum machine learning, the field of machine learning techniques that involve the use of quantum computing at some phase of the process. 
+    \begin{enumerate}[resume]
+        \item To define quantum machine learning approaches and determine which branch we will focus on this thesis.
+        \item To study the quantum version of support vector machines and neural networks with a strong focus on their mathematical framework.
+    \end{enumerate}
+
+
+    \item \textbf{Chapter \ref{ch:4-Implementation} Case study: entanglement detection}. Its focus is shifted towards computer science: we will face a binary classification problem with quantum machine learning methods. The starting point has been the papers \cite{casale2023large, urena2023entanglement}, in which the quantum separability problem ( determining if a quantum state is entangled or not) is approached with classical machine learning methods. The objectives set for this chapter are:
+    \begin{enumerate}[resume]
+        \item To get acquainted with PennyLane quantum computing framework.
+        \item To understand the quantum separability problem. \cite{guhne2009entanglement}
+        \item To implement and experiment with quantum support vector machines and quantum neural networks applied to our chosen problem.
+        \item To eventually compare the outcomes from classical machine learning with those obtained with our quantum models.
+    \end{enumerate}
+    
+
+    \item \textbf{Chapter \ref{ch:5- FeasibilityQML}: Feasibility of Quantum Machine Learning problems}. We will assess the practical implications of Quantum Machine Learning, considering its potential and challenges. Our aims for this chapter are:
+    \begin{enumerate}[resume]
+        \item To explore the advantages of quantum machine learning against classical machine learning.
+        \item To overview future perspectives.
+    \end{enumerate}
+    The core of this study on quantum machine learning of chapters \ref{ch:3-QML} and \ref{ch:5- FeasibilityQML} relies on \cite{schuld2021machine, combarro2023practical}.
+    
+\end{itemize}
+
+
+
+\endinput

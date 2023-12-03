@@ -1,0 +1,52 @@
+% !TeX root = ../tfg.tex
+% !TeX encoding = utf8
+
+\chapter{Appendix: Auxiliary theorems}\label{ap:appendix}
+
+\begin{teorema}[Spectral theorem] \label{th:spectral theorem}
+    Let $\mathbb{H}$ be a separable Hilbert space and let T be a compact self-adjoint operator. Then there exists a Hilbert basis ( a orthonormal basis) composed of eigenvectors of T. \cite{brezis2011functional} Theorem 6.11
+\end{teorema}
+
+\begin{teorema}[Hausdorff theorem] \label{th:Hausdorff theorem}
+    Every linear biyective application between finite dimension normed spaces is an isomorphism. \cite{paya-apuntes}
+\end{teorema}
+
+\begin{teorema}[Riesz-Fréchet representation theorem] \label{th:Riesz theorem}
+    Let $\mathbb{H}$ be a Hilbert space and $\Lambda \in \mathbb{H}^{*}$. Then it exists a unique $y \in \mathbb{H}$ such that $\Lambda = \Lambda_y$, that is, $\Lambda(x) = \braket{x,y}\quad \forall x \in \mathbb{H}$.
+
+    Moreover, the application 
+    \begin{align}
+        \mathbb{H} &\longrightarrow \mathbb{H}^{*}\\
+        y &\longmapsto \Lambda_y
+    \end{align}
+    is an isometry (isomorphism that preserves the norm: $||\Lambda|| = ||y||$ ) and it is linear conjugate. \cite{brezis2011functional} Theorem 5.5
+\end{teorema} 
+
+\begin{teorema}[Orthogonal projection theorem] \label{th:orthogonal projection theorem}
+    Given $\mathbb{H}$ a Hilbert space and $\mathcal{Y}$ a closed subset in $\mathbb{H}$. Then,
+    \begin{enumerate}
+        \item The orthogonal projection $P_{\mathcal{Y}}$ from $\mathbb{H}$ to $\mathcal{Y}$ verifies that $\forall x \in \mathbb{H}$, $P(x)$ is the only point in $\mathcal{Y}$ so that $|| P(x) - x|| = \mathrm{dist}(x,\mathcal{Y})$. Therefore, $P(x) = P_{\mathcal{Y}}(x)$ 
+        \item $\forall x \in \mathbb{H}$, $||x||^2 = ||P_{\mathcal{Y}}(x)||^2 + ||x - P_{\mathcal{Y}}(x)||^2$. In particular, $P_{\mathcal{Y}}$ is continuous.
+        \item $\mathcal{X} = \mathcal{Y} \oplus \mathcal{Y}^{\perp}$
+        \item $\mathcal{Y}^{\perp \perp} = \mathcal{Y}$ and $P_{\mathcal{Y}^{\perp}} = \mathrm{id}_{\mathcal{H}} - P_{\mathcal{Y}}$
+    \end{enumerate}
+    \cite{mariamedina-apuntes}
+\end{teorema}
+
+\begin{teorema}[Schmidt decomposition]\label{th:schmidt decomposition}
+    Suppose $\ket{\psi}$ is a pure state of a composite sytem, AB. Then there exist orthonormal states $\ket{i_A}$ for system $A$, and orthornormal states $\ket{i_B}$ of system $B$ such that 
+    \begin{equation}
+        \ket{\psi} = \sum_{i} \lambda i_i \ket{i_A} \ket{i_B}
+    \end{equation}
+
+    where $\lambda_i$ are non-negative real numbers satisfying $\sum_i \lambda_i^2=1$.
+    
+    \cite{nielsen_chuang_2010} Theorem 2.7
+\end{teorema}
+
+
+
+\endinput
+%------------------------------------------------------------------------------------
+% FIN DEL APÉNDICE. 
+%------------------------------------------------------------------------------------

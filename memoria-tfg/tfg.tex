@@ -1,0 +1,120 @@
+% !TEX program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+
+% Plantilla, basada en la clase `scrbook` del paquete KOMA-script,  para la elaboración de un TFG siguiendo las directrices del la comisión del Grado en Matemáticas de la Universidad de Granada.
+
+% Francisco Torralbo Torralbo
+
+\documentclass[print, color]{ugrTFG}
+
+% VERSIÓN ELECTRÓNICA PARA TABLETA
+% Cambiando la opción "print" por "tablet" generaremos un pdf adaptado para leerlo en tabletas de 9 pulgadas.
+
+% -------------------------------------------------------------------
+% INFORMACIÓN DEL TFG Y EL AUTOR
+% -------------------------------------------------------------------
+
+\newcommand{\miTitulo}{Mathematics of Supervised Machine Learning applied to Quantum Computing: addressing the entanglement detection problem\xspace}
+\newcommand{\miNombre}{Ana Martínez Sabiote\xspace}
+\newcommand{\miGrado}{Doble Grado en Ingeniería Informática y Matemáticas}
+\newcommand{\miFacultad}{Escuela Técnica Superior de Ingenierías Informática y Telecomunicación \\ Facultad de Ciencias}
+\newcommand{\miUniversidad}{Universidad de Granada}
+
+% Añadir tantos tutores como sea necesario separando cada uno de ellos mediante el comando `\medskip` y una línea en blanco
+\newcommand{\miTutor}{
+  Carlos Cano Gutiérrez\\ \emph{Departamento de Ciencias de Computación e I.A.} 
+
+  % Añadir tantos tutores como sea necesario. 
+
+  \medskip
+  Antonio Lasanta Becerra\\ \emph{Departamento de Álgebra}
+}
+\newcommand{\miCurso}{2023-2024\xspace}
+
+\hypersetup{
+	pdftitle={\miTitulo},
+	pdfauthor={\textcopyright\ \miNombre, \miFacultad, \miUniversidad}
+}
+
+\begin{document}
+
+\maketitle
+
+% -------------------------------------------------------------------
+% FRONTMATTER
+% -------------------------------------------------------------------
+\frontmatter % Desactiva la numeración de capítulos y usa numeración romana para las páginas
+
+\input{preliminares/declaracion-originalidad}   
+%\input{preliminares/dedicatoria}                % Opcional
+\input{preliminares/tablacontenidos}            
+\input{preliminares/agradecimientos}            % Opcional
+
+\input{preliminares/summary}                    
+\input{preliminares/introduccion}               
+
+% -------------------------------------------------------------------
+% MAINMATTER
+% -------------------------------------------------------------------
+\mainmatter % activa la numeración de capítulos, resetea la numeración de las páginas y usa números arábigos
+
+% \part{Primera parte} % Dividir un TFG en partes OPCIONAL
+
+% \input{capitulos/documentacion}
+% Añadir tantos capítulos como sea necesario
+
+% \cleardoublepage\part{Segunda parte}
+% \input{capitulos/capitulo-ejemplo}
+
+\input{capitulos/ch1-MathematicalFundamentalsML}
+\input{capitulos/ch2-IntroQC}
+\input{capitulos/ch3-QML}
+\input{capitulos/ch4-Implementation}
+\input{capitulos/ch5-FeasibilityQML}
+\input{capitulos/conclusion}
+
+\input{glosario} 
+% -------------------------------------------------------------------
+% APPENDIX: Opcional
+% -------------------------------------------------------------------
+
+\appendix % Reinicia la numeración de los capítulos y usa letras para numerarlos
+\pdfbookmark[-1]{Apéndices}{appendix} % Alternativamente podemos agrupar los apéndices con un nuevo \part{Apéndices}
+%\part{Appendix}
+%\input{apendices/apendice-ejemplo}
+\input{apendices/apendice}
+
+\input{apendices/apendice_notebook}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+	1,section,1,Work setup,p1,   
+	2,section,1,Pre-work to get started,p2,
+	37,section,1,Case study: dataset with 0.5 PPT ratio,p3,
+	76,section,1,Case study: dataset with 1.0 PPT ratio,p4}]{apendices/notebook_appendix.pdf}
+
+  
+% Añadir tantos apéndices como sea necesario 
+
+% -------------------------------------------------------------------
+% GLOSARIO: Opcional
+% -------------------------------------------------------------------
+
+
+
+% -------------------------------------------------------------------
+% BACKMATTER
+% -------------------------------------------------------------------
+
+\backmatter % Desactiva la numeración de los capítulos
+\pdfbookmark[-1]{Referencias}{BM-Referencias}
+
+% BIBLIOGRAFÍA
+%-------------------------------------------------------------------
+
+\bibliographystyle{alpha-es} 
+\begin{small} 
+  \bibliography{library.bib}
+\end{small}
+
+
+\end{document}

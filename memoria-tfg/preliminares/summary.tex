@@ -1,0 +1,37 @@
+% !TeX root = ../tfg.tex
+% !TeX encoding = utf8
+%
+%*******************************************************
+% Summary
+%*******************************************************
+
+\selectlanguage{english}
+\chapter{Summary}
+
+This text revolves around supervised machine learning and quantum computing, aiming to study its convergence into quantum machine learning from a theoretical and practical perspective. For the latter, we propose a study of the entanglement detection problem through a quantum machine learning lens. The quantum separability problem addresses detection of quantum entanglement, a fundamental feature of quantum mechanics, and can be formulated as a binary classification problem.
+\vspace{5pt}
+
+The goals of this thesis are: 
+\begin{enumerate}
+	\item To provide a solid mathematical understanding of supervised machine learning, quantum computing and their intersection: supervised quantum machine learning.
+	\item Approaching the quantum separability problem with quantum machine learning methods, including the implementation of the methods and the corresponding experimentation.
+\end{enumerate} 
+
+The first goal is addressed in chapters \ref{ch:1-MathematicalFundamentalsML}, \ref{ch:2-IntroQC}, \ref{ch:3-QML}. The first chapter attempts to build the mathematical fundamentals of supervised machine learning following the three component schema: the data, the model and the learning procedure. It focuses on two models: support vector machines and neural networks. 
+In the second chapter, an exploration into quantum computing begins by introducing the foundational postulates of quantum mechanics, continues with the state and prove of the no-cloning theorem, one of the most important theorems in quantum computing, and finishes with the concept of entanglement (which is at the core of the quantum separability problem) and an introduction to open quantum systems.
+In the third chapter, the focus shifts towards the realm of quantum machine learning and the study of quantum support vector machines and quantum neural networks, where we delve into their mathematical formulation. These prepare the ground to explore the adaptation and implementation of these quantum models in the following chapter where we apply them to the entanglement detection problem.
+\vspace{5pt}
+
+The second goal is addressed in chapter \ref{ch:4-Implementation}. The implementation of the proposed methods is carried out in Python using Google Colab as the primary computing environment and the PennyLane quantum computing library,  which enabled the integration of quantum computing functionalities. We performed an extensive experimentation to assess the performance of quantum support vector machines and quantum neural networks on the quantum entanglement detection problem  with $3 \times 3$ bipartite system states.
+\vspace{5pt}
+
+Finally, the fifth chapter discusses the prospect of the impact quantum computers can wield in the domain of machine learning. Through a comprehensive analysis, it aims to identify the decisive aspects on quantum advantage and future perspectives.
+\vspace{5pt} 
+
+Code and data availability: \url{https://github.com/anamarsabi/tfg}
+
+%\href{https://github.com/anamarsabi/tfg}{at the GitHub repository of this thesis}.
+\vspace{5pt}
+
+\textbf{Keyworkds:} supervised machine learning, quantum computing, quantum machine learning, quantum support vector machines, quantum neural networks, entanglement detection, PennyLane.
+\endinput

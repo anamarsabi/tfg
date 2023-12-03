@@ -1,0 +1,328 @@
+% !TeX root = ../tfg.tex
+% !TeX encoding = utf8
+
+\chapter{Case study: entanglement detection}\label{ch:4-Implementation}
+
+
+
+To continue further with our study of quantum machine learning methods, we will approach a binary classification problem using quantum support vector machines and quantum neural networks. First, let's get introduced to the problem.
+
+\section{Problem}
+Our goal for this chapter involved delving into the state-of-the-art quantum computing frameworks to translate the methods from \autoref{ch:3-QML} from theory to practice. To do so, our chosen approach has been to tackle a machine learning problem. In order to continue with the discourse of this thesis, we picked up Feynman's initial proposal of simulating physics with computers and we have chosen the \textbf{quantum separability problem}. It addresses detection and classification of quantum entanglement, a fundamental feature of quantum mechanics presented in \autoref{sec:entanglement}. This problem is based on determining if a certain quantum state is entangled or not. There has been proposals of different criteria for dealing with the separability problem such as Bell's inequalities, the Peres-Horodecki positive partial transpose criterion (PPT) and entanglement witnesses (\cite{HORODECKI19961, guhne2009entanglement}). 
+
+In particular, we will only focus on bipartite quantum systems, that is, systems composed of two distinct subsystems. The Hilbert space $\mathbb{H}$ associated with a bipartite quantum system is given by the tensor product $\mathbb{H}_A \otimes \mathbb{H}_B$ of the subsystems $A$ and $B$. Those subsystems may not necessarily be the $2$-dimensional Hilbert state space of qubits, but any $n$-dimensional Hilbert space. Our problem will be constrained to $\mathbb{H}=\mathbb{H}_A \otimes \mathbb{H}_B$, where $\dim (\mathbb{H}_A )= \dim (\mathbb{H}_B ) = 3 $. A quantum state is described by a density matrix: a positive semidefinite Hermitian matrix of trace one. Let's quickly remember the notion of entanglement: a state (that is, a density matrix) that cannot be written as a tensor product of quantum states of the subsystems. Now we can express the quantum separability problem in the terms we will work with. This problem consists in deciding whether a bipartite density matrix is entangled or separable. Formally, it can be defined as follows:
+
+\begin{tcolorbox}[title=Quantum separability problem]
+
+    Let $\mathbb{H} = \mathbb{H}_A \otimes \mathbb{H}_B$ be a bipartite quantum state space and $\rho$ be a density matrix acting on $\mathbb{H}$. The quantum separability problem is to determine if ${\rho \in S_{+}^{p} = \left \lbrace \rho \in \mathbb{C}^{p \times p}: \rho \geq 0,\, \mathrm{Tr}(\rho)=1  \right\rbrace}$ admits a decomposition of the form
+    \begin{equation}
+        \rho = \sum_{j}q_j \sigma_{A,j} \otimes \sigma_{B,j} \text{ such that } q_j\in \mathbb{R}^{+},\, \sum_{j}q_j =1
+    \end{equation}
+    where $\sigma_{A,j} \in S_{+}^{p_A}$, $\sigma_{B,j} \in S_{+}^{p_B}$ are density matrices acting on $\mathbb{H}_A$ and $\mathbb{H}_B$, respectively, and the variables $\left\lbrace q_j \right\rbrace$ form a probability distribution.
+
+    If $\rho$ admits such a decomposition, then it is said to be separable, otherwise it is said to be entangled.
+\end{tcolorbox}
+
+
+
+In the case of pure states, the Schmidt decomposition \autoref{th:schmidt decomposition} is a valid tool for detecting entanglement. However, for mixed states, the separability problem has been proved to be NP-hard \cite{gurvits2003classical}. 
+
+The starting point has been the papers \cite{casale2023large, urena2023entanglement}, in which the separability problem is taken as a binary classification task that is approached with classical support vector machines and deep neural networks, respectively. To be able to do so, \cite{casale2023large} provide an efficient Frank-Wolfe based algorithm to approximately seek the nearest separable bipartite density matrix, derive a systematic way for labeling density matrices as separable or entangled and generate a labeled dataset with thousands of separable and entangled density matrices of sizes $9 \times 9$ (for the case $\mathbb{H}=\mathbb{H}_A \otimes \mathbb{H}_B$, where $\dim (\mathbb{H}_A )= \dim (\mathbb{H}_B ) = 3 $) and $49 \times 49$ ($\mathbb{H}=\mathbb{H}_A \otimes \mathbb{H}_B$, where $\dim (\mathbb{H}_A )= \dim (\mathbb{H}_B ) = 7 $). Additionally, the code and data of this work had been released at \href{https://gitlab.lis-lab.fr/balthazar.casale/ML-Quant-Sep}{their gitlab repository}, which has allowed us to take a subset of their data and manipulate it to obtain the dataset we will work with. In this study, we will take a step towards the ``quantum'' direction: we will apply the quantum machine learning methods that we have introduced in this thesis to the quantum separability problem. 
+
+\section{Dataset}
+
+The dataset we have worked with in this case study comes from \cite{casale2023large} 6000 samples dataset of separable and entangled density matrices, released at \href{https://gitlab.lis-lab.fr/balthazar.casale/ML-Quant-Sep}{their gitlab repository}. The effort that stands out in their research is the creation of a well-labeled training dataset, specially for high-dimensional density matrices and the release of this data encouraging reproducibility and future work aimed at detecting quantum entanglement. Their approach is based on the positive partial transpose (PPT) criterion and optimal entanglement witness. Next, we will present these criteria for bipartite entanglement.
+
+\subsection{The PPT criterion}
+
+First, we will start with the partial transposition. If we have a state $\rho$ that acts on $\mathbb{H}_A \otimes \mathbb{H}_B$, we can write $\rho$ density matrix in a chosen product basis as 
+\begin{equation}
+    \rho = \sum_{i,j}^{p_A} \sum_{k,l}^{p_B} \rho_{ij, kl} \ket{i}\bra{j} \otimes \ket{k}\bra{l}
+\end{equation}
+Given this decomposition, the partial transposition of $\rho$ with respect to one subsystem (in this case B) is defined as 
+\begin{align}
+    \rho^{T_B} &=\sum_{i,j}^{p_A} \sum_{k,l}^{p_B} \rho_{ij,kl} \ket{i}\bra{j} \otimes ( \ket{k} \bra{l})^T \\
+    &= \sum_{i,j}^{p_A} \sum_{k,l}^{p_B} \rho_{ik, kl} \ket{i}\bra{j} \otimes \ket{l} \bra{k} \\
+    &= \sum_{i,j}^{p_A} \sum_{k,l}^{p_B} \rho_{ik, lk} \ket{i}\bra{j} \otimes \ket{k} \bra{l}
+\end{align}
+
+This definition becomes more apparent when representing the density matrix in the form of a block matrix:
+
+\begin{equation}
+    \rho = \begin{bmatrix}
+        \rho_{1,1}& \cdots & \rho_{1,p_A}\\
+        \vdots & & \vdots\\
+        \rho_{p_A,1} & \cdots & \rho_{p_A,p_A}
+        \end{bmatrix} 
+\end{equation}
+where the blocks $\rho_{i,j}$ are $p_B \times p_B$ matrices $\forall i,j =1, ..., p_A$.
+
+Then, the partial transpose is
+\begin{equation}
+    \rho^{T_B} = \begin{bmatrix}
+        \rho_{1,1}^T& \cdots & \rho_{1,p_A}^T\\
+        \vdots & & \vdots\\
+        \rho_{p_A,1}^T & \cdots & \rho_{p_A,p_A}^T
+        \end{bmatrix} 
+\end{equation}
+
+Similarly, we can define $\rho^{T_A}$ by exchanging $i$ and $j$ instead of $k$ and $l$. 
+
+A density matrix $\rho$ has a positive partial transpose (or the matrix is PPT) if its partial transposition has no negative eigenvalues, thus it is positive semidefinite: $\rho^{T_B}\geq 0$. If a matrix is not PPT, we call it NPPT. 
+
+\begin{teorema}[PPT Criterion]
+    Let $\rho$ be a bipartite separable state. Then $\rho$ is PPT. 
+\end{teorema}
+\begin{proof}
+    The PPT criterion follows directly from the definition of separability. If $\rho$ is a bipartite separable state, then 
+    \begin{equation}
+        \rho = \sum_{j}q_j \sigma_{A,j} \otimes \sigma_{B,j} 
+    \end{equation}
+    and we have $\rho^{T_B} = \sum_j q_j \sigma_{A,j} \otimes (\sigma_{B,j})^T$
+
+    Since the transposition operation preserves eigenvalues, the spectrum of $(\sigma_{B,j})^T$ is the same as the spectrum of $\sigma_{B,j}$, therefore $(\sigma_{B,j})^T$ is positive semidefinite.  Consequently, the partial transposition $\rho^{T_B}$ is also positive semidefinite.
+\end{proof}
+
+For a given density matrix, this criterion guarantees us that if we can calculate its partial transpose and find a negative eigenvalue, then the state is entangled. The PPT criterion is a necessary condition, so it is natural to ask: is the PPT criterion sufficient for separability? That is, $\rho^{T_B} \geq 0$ implies separability?
+
+\begin{teorema}[Horodecki Theorem]
+    If $\rho$ is a bipartite density matrix such that $p_A=2$ and $p_B = 2$ or $p_B=3$, then $\rho^{T_B} \geq 0$ implies that $\rho$ is separable. In other dimensions this is not the case.
+\end{teorema}
+
+In $2 \times 2$ and $2 \times 3$ systems the PPT criterion is a necessary and sufficient condition for separability. When working with the separability problem in these dimensions from a machine learning approach, the PPT criterion is enough to label as separable or entangled the training density matrix set. However, in other dimensions there might be non-separable density matrices fulfilling the PPT condition. Note that PPT states contain separable and entangled states, while NPPT states are all entangled. Therefore, using the PPT criterion to label the dataset in these cases leads to a partial problem: being PPT or not, which is a different task from quantum separability and not really interesting. 
+
+According to the PPT criterion, we can classify quantum states in the following classes:
+\begin{itemize}
+    \item \textbf{Separable}: density matrices that are separable fulfill the PPT criterion. In $2 \times 2$ and $2 \times 3$ all matrices that satisfy the PPT condition are separable.
+    \item \textbf{PPT entangled}: density matrices that are entangled and fulfill the PPT condition. This class exists in systems of dimension different than $2 \times 2$ and $2 \times 3$ .
+    \item \textbf{NPPT entangled}: density matrices which do not fulfill the PPT condition, that is, matrices whose partial transpose matrix has a negative eigenvalue and thus, are entangled. In $2 \times 2$ and $2 \times 3$ all the entangled states are matrices that do not satisfy the PPT condition.
+\end{itemize}
+
+The dataset includes separable, PPT entangled and NPPT entangled density matrices, each class stored in a file. The generation of PPT entangled density matrices is the great contribution of \cite{casale2023large}, providing a practical and efficient method that relies on the notion of entanglement witness.
+
+\subsection{Methodology to obtain the dataset}
+Working with the code and data released by \cite{casale2023large}, we took the following steps to create the dataset we will work with:
+\begin{enumerate}
+    \item The density matrices for separable and entangled states were stored in files. From them we read:
+    \begin{itemize}
+        \item $100$ separable density matrices, labeled $0$, and generated an array of separable density matrices
+        \item $100$ entangled density matrices, labeled $1$. For one dataset, we fixed a $0.5$ PPT ratio, which means that we took $50\%$ of the entangled class to be PPT entangled density matrices and the remaining $50\%$ NPPT entangled states. For the other dataset, we took a PPT ratio of $1.0$, that is, all the entangled matrices were entangled and fulfilling the PPT condition. There is no presence of NPPT matrices in this dataset.
+    \end{itemize}
+    \item Both arrays were stacked to create a $200$ samples training dataset of bipartite $9 \times 9$ complex density matrices of a $3 \times 3$ system. 
+    \item We transformed the array of complex density matrices (with shape $(200,9,9)$ into a real-valued vector of $200$ samples and $80$ attributes. This operation is based on the decomposition into the generalised Gell-Mann basis and provided in the repository of their paper.
+    \item Finally, we exported the array containing our training set into a \textit{.csv} file. The training dataset with PPT ratio $0.5$ is stored in \textit{x\_train\_05.csv}. The dataset with PPT ratio $1.0$ corresponds with the file \textit{x\_train\_1.csv}.
+\end{enumerate}
+
+The process for creating the test set was analogous: we read the density matrices for separable and entangled states from the test files. In this case we took 100 samples of each type: $100$ samples of separable states, $100$ PPT entangled density matrices and $100$ NPPT entangled states. Resulting in a $300$ samples test set.
+
+Our aim was to reproduce the conditions under which the paper \cite{casale2023large} works to be able to obtain comparable results. We took the reduced version of the training set composed by $200$ samples that they consider in the Appendix E.3. Their study is performed considering different PPT ratios, while we have constrained our research under the specific PPT ratios of $0.5$ and $1.0$. On the other hand, the test set used in the paper was composed of $3000$ samples, $1000$ samples per type (SEP, PPT-ent, NPPT-ent). Due to the long executing times of current quantum machine learning methods, we decided to work with a reduced version of the test set made of $300$ samples, $100$ samples per type. As a final consideration, we have not used data augmentation. 
+
+
+
+\section{Implementation}
+
+We approached the implementation part of this work using a Jupyter notebook, powered by Python, and hosted on Google Colab. This choice of tools not only facilitated the smooth implementation of the project but also offered the advantage of accessibility, collaboration and the use of GPU acceleration. This notebook and data are available at \href{https://github.com/anamarsabi/tfg}{the GitHub repository of this thesis}.
+
+\subsection{PennyLane}
+It comes the moment to put into practice the quantum machine learning methods we acquainted in the previous chapter. Thankfully, for passing from theory to implementation there is currently a multitude of excellent software frameworks for quantum computing. Our chosen one is \textbf{PennyLane} \cite{bergholm2018pennylane}, a powerful, widely used open-source software library specially targeted for quantum machine learning, built around the idea of training quantum circuits using automatic differentiation. It is being developed at Xanadu. It relies on Python as a host language. PennyLane software package allows you to implement quantum circuits, comes with several built-in simulators and allows you to train quantum machine learning models.
+
+It is similar to \textbf{TensorFlow} and \textbf{PyTorch} for classical computation and indeed, PennyLane is highly inter-operable with classical machine learning frameworks such as \textbf{scikit-learn}, \textbf{keras} and the previously mentioned ones.  This integration enables the combination of classical and quantum computations.
+
+PennyLane comes with built-in support for several quantum devices and also a wide collection of plugins to run PennyLane quantum algorithms in external quantum devices: real quantum computers and a broad collection of simulators provided by various computing platforms. This allows researchers and developers to experiment and run quantum computations on a variety of backends.  
+
+In the end, the various quantum computing frameworks that are at our disposal, PennyLane among them, play a vital role in democratizing access to this emerging technology beyond its theoretical formulation and explore its potential.
+
+\subsection{Design choices}
+Our work in the realm of quantum machine learning starts with choosing an encoding technique. Our dataset contains classical data about the quantum separability problem, but nonetheless, classical data. The first step to work with quantum machine learning (CQ category) is to map the classical data into quantum states. There are different possible feature-embedding circuits built-in PennyLane. The amount of attributes of our dataset also conditions this choice. Working with 80 attributes makes us discard almost every PennyLane data embedding because they require the number of qubits of the system to be greater or equal to the number of attributes. Given that we have 80 attributes, or even if we reduced the number of attributes to half with dimensionality reduction techniques, the needed amount of qubits to encode the data is too high for the simulators, quantum computers and executing times we are working with in the current days. The only option is amplitude encoding, which allows us to encode $N \leq 2^n$ attributes in a system of $n$-qubits. This way, we would need a $7$-qubit system, which can encode up to $128$ attributes with amplitude encoding. 
+
+As soon as we started working with quantum machine learning models, we faced long training times. Consequently, it became apparent that we needed to reduce the dimensionality of the dataset. The dataset is formed by $200$ samples characterized by $80$ attributes. The challenge we had to deal with were the high number of attributes. We opted for Principal Component Analysis (PCA). This tecnique simplifies the complexity in high-dimensional data while retaining trends and patterns. It does this by transforming the data into fewer dimensions, which act as summaries of features. After a first phase of exploration of the techniques and their parameters, we decided to use PCA to 32 components for the training and test set. This way, we could reduce the number of qubits of the system to $5$ and embedded the $32$ features using amplitude encoding. 
+
+In practice, the roots of quantum machine learning models are quantum circuits, which are then optimised through training. To run a circuit in PennyLane you firstly need a \textit{Device} object and a function that specifies the circuit. A \textit{Device} object is PennyLane's virtual analog of a quantum device, provided with methods to run any given circuit. We have worked with \textbf{lightning.qubit}, a fast state-vector qubit simulator written with a C++ backend, since it is a good choice for optimizations with a moderate number of qubits and parameters. The number of qubits is a property of the device object itself that we fix when we initialize the device. 
+
+It is worth noting that we have worked with five fold cross validation. This approach is extensively used and it was also chosen in \cite{casale2023large} work. Data is divided in 5 disjoint subsets called folds. The goal is to validate the model with different combinations of such folds. In particular, the samples belonging to one of the five folds will become the validation set, while the union of the samples belonging to the remaining 4 folds will be used as the training set. This process is iterative such that each fold becomes once the validation set.
+
+\subsection{Development of the work}
+The development of this practical part has evolved in several consecutive phases driven by the findings and insights we gleaned. 
+
+\subsubsection{Phase 1: Pre-work to get started}
+We first started working with \textbf{dataset 1.0}. The scope of this first phase was familiarizing with the framework PennyLane, the problem and the dataset, as well as building our first quantum machine learning methods and getting a broad idea of the effect of their parameters and performance.  This phase determined the design choices stated previously. This section comprises the experimentation performed in \autoref{p2}.
+
+Firstly, we proceeded with quantum support vector machines. Since quantum support vector machines are completely determined by the feature map and our feature embedding technique was limited to amplitude encoding due to the previous argumentation, there weren't many possible configurations beyond experimenting with the number of attributes of the dataset and the number qubits of the system. Our first trial with all the $80$ attributes and amplitude encoding with $7$ qubits, was not successful because of the training would take more than $1$ hour and the kernel disconnected before completing the training and predictions. This showed us that it was mandatory to reduce the dimensionality of the dataset with Principal Component Analysis to be able to work with it. The results of this part are summarised in \autoref{tab:phase1-QSVM}.
+
+
+\begin{table}[]
+    \centering
+    \begin{adjustbox}{width=\textwidth}
+    \setlength{\tabcolsep}{10pt} % Default value: 6pt
+    \renewcommand{\arraystretch}{1.5} % Default value: 1
+    \begin{tabular}{p{0.09\textwidth}p{0.07\textwidth}p{0.14\textwidth}p{0.08\textwidth}p{0.1\textwidth}p{0.20\textwidth}p{0.1\textwidth}}
+        \toprule
+        Nº of attributes & Nº of qubits & Device & Method & Runtime env. & Times & Accuracy test set\\
+         \hline
+        64 & 6 & lightning.qubit & SVM & CPU & Training: $28$ min Prediction: $44$ min & 1.0 \\
+        32 & 5 & lightning.qubit & SVM & CPU & Training: $15$ min Prediction: $23$ min & 0.9667
+    \end{tabular}
+    \end{adjustbox}
+    \caption{Phase 1: Summary table of QSVM}
+    \label{tab:phase1-QSVM}
+\end{table}
+
+We noticed that the reduction in the number of attributes (from 64 to 32) implied a reduction by half in the executing time of both training and prediction stages, barely compromising the accuracy on the test set. Our first encounter with quantum support vector machines turned out to be really successful.
+
+Next we continued with Quantum Neural Networks. We have worked with the whole dataset (with 80 attributes) and the dataset reduced with principal component analysis to 64 and 32 components for performing our experimentation. We also tested in some scenarios the effect of feeding the models with normalized data. The choice of the data encoding technique, the variational form and the number of repetitions of it (also understood as layers) are the determining factors of a quantum neural network architecture. Therefore, we have more conditions to play with. One of the most rigorous ways to select the best model and hyperparameters of a machine learning problem is using \textit{GridSearchCV} class from scikit-learn. However, we cannot use it for tuning quantum neural network's parameters because they are part of the definition of the circuits. We have had to try by ourselves to find the most promising configuration by trial and error, observing the effects of different architectures in the performance. Although we could not perform ``by hand'' the exhaustive analysis that a method like \textit{GridSearchCV} would do, we arrived to some potential results, that we will try further in the next phases, and gained a valuable insight understanding quantum neural network's architecture. The results of this part are summarised in \autoref{tab:phase1-QNN}.
+
+
+\begin{table}[]
+    \centering
+    \begin{adjustbox}{width=\textwidth}
+    \setlength{\tabcolsep}{10pt} % Default value: 6pt
+    \renewcommand{\arraystretch}{1.5} % Default value: 1
+    \begin{tabular}{p{0.05\textwidth}p{0.07\textwidth}p{0.14\textwidth}p{0.15\textwidth}p{0.05\textwidth}p{0.08\textwidth}p{0.1\textwidth}p{0.09\textwidth}p{0.11\textwidth}}
+        \toprule
+        Nº attr. & Nº of qubits & Device & Method & Nº reps & Diff. method & Runtime env. & Time & Accuracy test set\\
+         \hline
+        32 & 5 & default.qubit & QNN \newline TwoLocal & 1 & best & CPU & 15 min & 0.5967 \\
+        32 & 5 & default.qubit & QNN Strong\-Entangling\-Layers & 2 & best & CPU & 25 min & 0.5733 \\
+        32 & 5 & lightning.qubit & QNN Strong\-Entangling\-Layers & 2 & adjoint & CPU & 11 min & 0.5733 \\
+        64 & 6 & lightning.qubit & QNN Strong\-Entangling\-Layers & 2 & adjoint & CPU & 13 min & 0.63 \\
+        80 & 7 & lightning.qubit & QNN Strong\-Entangling\-Layers & 2 & adjoint & CPU & 20 min & 0.4833 \\
+        80, n & 7 & lightning.qubit & QNN Strong\-Entangling\-Layers & 2 & adjoint & CPU & 15 min & 0.3333 \\
+        80, n & 7 & lightning.qubit & QNN Strong\-Entangling\-Layers & 4 & adjoint & CPU & 20 min & 0.3867 \\
+        32, n & 5 & lightning.qubit & QNN \newline TwoLocal & 1 & adjoint & CPU & 10 min & 0.4733 \\
+        32, n & 5 & lightning.qubit & QNN \newline TwoLocal & 5 & adjoint & CPU & 12 min & 0.5633 \\
+        32, n & 5 & lightning.qubit & QNN \newline TwoLocal & 10 & adjoint & CPU & 20 min & 0.7033 SEP: 0.95 PPT: 0.57 NPPT: 0.59  \\
+        32, n & 5 & lightning.qubit & QNN Strong\-Entangling\-Layers & 8 & adjoint & CPU & 28 min & 0.7233 SEP: 0.88 PPT: 0.69 NPPT: 0.6 \\
+        
+    \end{tabular}
+    \end{adjustbox}
+    \caption{Phase 1: Summary table of QNN \\ The number of attributes followed by the letter n stands for normalized.}
+    \label{tab:phase1-QNN}
+\end{table}
+
+We will point out the following aspects:
+\begin{itemize}
+    \item The interface between PennyLane and automatic differentiation libraries relies on PennyLane’s ability to compute or estimate gradients of quantum circuits. When creating a QNode, you can specify the differentiation method.  When not specified, PennyLane will attempt to determine the best differentiation method given the device and interface. We have realised that using the device \textbf{lightning.qubit} and \textbf{adjoint} differentiation method we obtain faster training times and the accuracy does not change.
+    \item We can appreciate that the increase in the number of repetitions seems to produce an increase in the accuracy. In particular, the last two entries of the table obtain around a $70\%$ of accuracy. 
+\end{itemize}
+
+\subsubsection{Phase 2: Separability problem with dataset 0.5 PPT ratio}
+
+We have chosen $0.5$ PPT ratio so that both types of entangled states are present in our dataset. Since the test dataset contains separable, PPT entangled and NPPT entangled matrices, we decided that using a training dataset with $0.5$ PPT ratio would be more representative of the problem and thus improve our results from phase 1. This section corresponds to \autoref{p3} experimentation.
+
+Our aim for this phase has been
+\begin{itemize}
+    \item Study the most promising configurations from Phase 1: 
+    \begin{enumerate}
+        \item Quantum support vector machine, with 5 qubits amplitude encoding.
+        \item Quantum neural network TwoLocal variational form with 10 repetitions.
+        \item Quantum neural network StrongEntanglingLayers variational form with 8 repetitions
+    \end{enumerate}
+    \item Study the effect and improvements in the performance of the models using a training dataset with $0.5$ PPT ratio for the quantum separability problem.
+    \item Try out the effect of data normalization in the performance of our models.
+\end{itemize}
+
+Regarding quantum support vector machine, we have to remark that we have obtained again great results with this method. We have used a Support Vector Machine with a quantum kernel induced by Amplitude encoding with $5$ qubits and $32$ attributes.
+
+We have run with GPU acceleration the training in $12$ minutes and predictions on the training set in $13$ minutes. We have obtained an accuracy of $1.0$ on the training set.
+Then, we have performed the predictions on the test set, which took $19$ minutes. We have obtained an accuracy of $0.9667$ on the test set.
+
+With the predictions of the test set, we have also studied the accuracy on the predictions of each type of data: Separable, PPT-entangled and NPPT-entangled:
+\begin{itemize}
+    \item Accuracy of 0.97 on the separable data samples
+    \item Accuracy of 0.95 on the PPT entangled data samples
+    \item Accuracy of 0.98 on the NPPT entangled data samples.
+\end{itemize}
+
+Therefore, we can conclude that this QSVM performs great and is able to correctly clasify separable and entangled data, in particular PPT entangled data (which is the "hardest" to distinguish from separable) with a great accuracy. Additionally, we can state that quantum support vector machines are a robust method against the PPT ratio for the quantum separability problem.
+
+On the other hand, as we can appreciate in the summary table \autoref{tab:phase2-QNN} of quantum neural networks, we have obtained lower accuracy over the test set in our different trials, not higher than $65\%$, compared to our best neural networks from Phase 1 that were around $70\%$ of accuracy. If we pay attention to the accuracy analysis broken down per type, we can observe that our models struggle to detect entanglement, specially for PPT states. The accuracy for PPT entangled states does not even reach $50\%$. Going back to the accuracy per type of the two last experiments from Phase 1, these models (trained with a PPT ratio $1.0$ dataset) could predict entanglement better, in particular detecting entangled states of the class PPT, with up to $69\%$ of accuracy. 
+
+\begin{table}[]
+    \centering
+    \begin{adjustbox}{width=\textwidth}
+    \setlength{\tabcolsep}{10pt} % Default value: 6pt
+    \renewcommand{\arraystretch}{1.5} % Default value: 1
+    \begin{tabular}{p{0.06\textwidth}p{0.18\textwidth}p{0.08\textwidth}p{0.1\textwidth}p{0.08\textwidth}p{0.12\textwidth}p{0.08\textwidth}}
+        \toprule
+        Norm & Variational form & Nº reps & Time & Accuracy test set & Accuracy per type & F-1 \newline test set\\
+         \hline
+        No & TwoLocal & 10 & 17 min & 0.633 & SEP: 0.97\newline PPT 0.45 \newline NPPT 0.48 & 0.628\\
+        Yes & TwoLocal & 10 & 15 min & 0.633 & SEP: 0.86\newline PPT 0.49 \newline NPPT 0.55 & 0.654\\
+        No & TwoLocal & 20 & 24 min & 0.64 & SEP: 0.98\newline PPT 0.44 \newline NPPT 0.5 & 0.635\\
+        No & StrongEntangling\-Layers & 8 & 26 min & 0.64 & SEP: 0.96\newline PPT 0.46 \newline NPPT 0.5 & 0.64\\
+        Yes & StrongEntangling\-Layers & 8 & 26 min & 0.56 & SEP: 0.91\newline PPT 0.42 \newline NPPT 0.35 & 0.538\\
+        No & BasicEntangler\-Layers & 10 & 20 min & 0.52 & SEP: 0.67\newline PPT 0.48 \newline NPPT 0.43 & 0.56\\
+        
+    \end{tabular}
+    \end{adjustbox}
+    \caption{Phase 2: Summary table of QNN }
+    \label{tab:phase2-QNN}
+\end{table}
+
+We should remark that the most interesting and challenging matter of this problem is distinguishing separable states from PPT entangled states, since we can simply make use of the PPT criterion for predicting the class NPPT entangled. Therefore, after the worsening of the results of this phase, we realised that training our models with a dataset of $1.0$ (thus, trained only with separable and PPT entangled samples) made our QNN better at detecting entanglement both for PPT entangled states (since it is trained with those samples) and for NPPT states (even if they are not present in the dataset). Our intuition of training with a dataset more representative of the test set was proved wrong. Instead, focusing on the most difficult task: separable versus PPT entangled, providing a dataset only formed by those two types of data, leads to better results. 
+
+Although in this phase we obtained worst results than we were expecting, it was a really interesting phase because it made us gain perspective on the problem and arrive to deeper a level of understanding of what we were facing beyond a simple classification problem. We acquired really valuable insights of the domain of the problem out of the initial counterintuitive worsening of the results that we did not expect. Therefore, we are leaving aside the $0.5$ PPT ratio dataset to continue working with $1.0$ PPT ratio dataset in the next phase.
+
+
+\subsubsection{Phase 3: Separability problem with dataset 1.0 PPT ratio}
+
+In this phase, we come back to the dataset with $1.0$ PPT ratio to study the most promising configurations to approach the quantum separability problem. Our experimentation (\autoref{p4}) has been guided by the work done in Phase 2 and the goals we had set.   
+
+On the one hand, quantum support vector machine have obtained again great results with the same configuration: a quantum kernel induced by Amplitude encoding with $5$ qubits and $32$ attributes.
+
+We have run with GPU acceleration the training in $12$ minutes.
+Then, we have performed the predictions on the test set, which took $19$ minutes. We have obtained an accuracy of $0.9667$ on the test set.
+
+The accuracy broken down per type of data (separable, PPT-entangled and NPPT-entangled) also shows that our quantum support vector machine can detect entanglement for both PPT and NPPT entangled states with great accuracy. 
+\begin{itemize}
+    \item Accuracy of 0.99 on the separable data samples
+    \item Accuracy of 0.93 on the PPT entangled data samples
+    \item Accuracy of 0.98 on the NPPT entangled data samples.
+\end{itemize}
+
+We conclude here our testing of QSVM, satisfied with the results obtained and the robustness of this method for detecting entanglement against the PPT ratio of the dataset.
+
+Concerning quantum neural networks, our results are summarised in \autoref{tab:phase3-QNN}. We have achieved better performance overall, with better accuracy as the numper of repetitions increases as before, but what interests us is drawing a conclusion on the normalization question. In the previous phase, we left that matter unresolved because there was no clear tendency and we should have continued with more testing. We decided to leave that question for this phase, where we did see a clear effect of normalization of our data: both methods work better with normalized data, resulting in finally surpassing the $0.7$ accuracy bound that it seemed to be. The quantum neural network with $10$ repetitions of TwoLocal variational form has $0.703$ of accuracy and with $8$ repetitions of StrongEntanglingLayers variational form we have obtained an accuracy of $0.723$. Finally, the best model we have tried has been the quantum neural network with $20$ repetitions of TwoLocal variational form, which achieved up to $80.6\%$ of accuracy over the test set and the greatest accuracy so far at detecting entanglement of PPT entangled states: $76\%$. 
+
+
+\begin{table}[]
+    \centering
+    \begin{adjustbox}{width=\textwidth}
+    \setlength{\tabcolsep}{10pt} % Default value: 6pt
+    \renewcommand{\arraystretch}{1.5} % Default value: 1
+    \begin{tabular}{p{0.06\textwidth}p{0.18\textwidth}p{0.08\textwidth}p{0.1\textwidth}p{0.08\textwidth}p{0.12\textwidth}p{0.08\textwidth}}
+        \toprule
+        Norm & Variational form & Nº reps & Time & Accuracy test set & Accuracy per type & F-1 \newline test set\\
+         \hline
+        No & TwoLocal & 10 & 14 min & 0.67 & SEP: 0.95\newline PPT 0.52 \newline NPPT 0.54 & 0.68\\
+        Yes & TwoLocal & 10 & 15 min & 0.703 & SEP: 0.95\newline PPT 0.57 \newline NPPT 0.59 & 0.722\\
+        No & TwoLocal & 20 & 24 min & 0.636 & SEP: 0.99\newline PPT 0.44 \newline NPPT 0.49 & 0.628\\
+        Yes & TwoLocal & 20 & 24 min & 0.806 & SEP: 0.97\newline PPT 0.76 \newline NPPT 0.69 & 0.83\\
+        No & StrongEntangling\-Layers & 8 & 28 min & 0.656 & SEP: 0.97\newline PPT 0.5 \newline NPPT 0.5 & 0.66\\
+        Yes & StrongEntangling\-Layers & 8 & 24 min & 0.723 & SEP: 0.88\newline PPT 0.69 \newline NPPT 0.6 & 0.756\\
+        
+    \end{tabular}
+    \end{adjustbox}
+    \caption{Phase 3: Summary table of QNN }
+    \label{tab:phase3-QNN}
+\end{table}
+
+\section{Results}
+
+To finalize the practical part of this thesis, we will go through the results of our approach to the quantum separability problem, where we have showcased the potential of quantum machine learning algorithms to effectively address entanglement detection. 
+
+Our findings indicate that the most difficult part of the quantum separability problem is detecting entanglement, not separability. Throughout our models we have always obtained a decent accuracy in detecting separable states, while entanglement detection has presented itself as the challenging task. The presence of PPT entangled samples in the dataset conditioned the performance of the models. A dataset formed by separable and PPT entangled samples is a better training set for quantum neural networks to face the problem, since the most interesting task is classifying separable and PPT entangled states, given that the PPT criteria is applicable for NPPT entangled states. 
+
+The challenge of our dataset has not been the number of data samples (since we kept it small to a couple of hundreds of data samples), but the number of attributes. When working with quantum support vector machines and quantum neural networks, the first step is encoding classical data into quantum states that our circuit will work with. Out of the possible data embedding techniques our choice was limited to one: amplitude encoding. This method encodes $N \leq 2^n$ attributes in a $n$-qubit system and allowed us to try out our methods in systems with a constrained number of qubits and execution time. We found that working with principal component analysis to reduce the number of attributes to $32$ to work with a $5$-qubit system was a good compromise of results and execution time. However, this can be further explored as larger systems and more resources come available.
+
+We can also state that the state-of-the-art technologies for the development of quantum machine learning methods are available and accessible. In particular, PennyLane's interoperability with Tensorflow and Pytorch opens future lines of this work exploring hybrid quantum neural networks: models in which classical and quantum layers are integrated or interleaved in some manner. This integration could involve a sequence of classical layers, which is then passed through quantum layers whose output might then be processed further by classical layers. 
+
+Quantum support vector machines are robust and our results using them are remarkable, achieving up to $96.7\%$ of accuracy. Since we replicated the hypothesis of \cite{casale2023large} paper, a training dataset of $200$ samples with $1.0$ PPT ratio and a reduced test dataset of $300$ samples with $100$ samples per type (separable, PPT-entangled and NPPT-entangled), we can establish a comparison between their results with classical support vector machines (without data augmentation) and ours with a quantum support vector machine. In this case, we have achieved better broken down accuracy for separable, PPT and NPPT entangled states. 
+
+
+Quantum neural networks had more aspects to investigate with and were more susceptible to the PPT ratio of the dataset, number of attributes, number of repetitions of the variational form while dealing with longer training times. The best configuration provided us over $80.6\%$ of accuracy, which we considered a satisfactory result to conclude our experimentation with quantum neural networks. However, this work paves the way for further exhaustive exploration of quantum neural network's application for the quantum separability problem.
+
+\endinput
+%--------------------------------------------------------------------
+% FIN DEL CAPÍTULO. 
+%--------------------------------------------------------------------
