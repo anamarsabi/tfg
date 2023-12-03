@@ -3,4 +3,4 @@
 
 Repositorio de mi trabajo de fin de grado del doble grado en Ingeniería Informática y Matemáticas. UGR 2023
 
-El código está listo para ejecutar poniendo la carpeta tfg de tfg-data en tu unidad de Google Drive y abriendo el notebook en Google Colab
+El código del notebook tfg_entanglement_detection.ipynb está listo para ejecutar poniendo la carpeta tfg de tfg-data en tu unidad de Google Drive y abriendo el notebook en Google Colab
